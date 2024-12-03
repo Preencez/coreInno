@@ -1,6 +1,7 @@
 import streamlit as st
 import numpy as np
 import joblib
+import pandas as pd
 
 # Load the trained Gaussian Naive Bayes model
 gaussian_nb_model = joblib.load("gaussian_nb_model.pkl")
@@ -69,16 +70,6 @@ symptom_mapping = {
     "Yellowing of the skin": 60,
 }
 
-# Diseases and associated symptom codes
-disease_symptoms = {
-    "Hepatitis": [14, 1, 19, 12, 15, 17, 20, 16, 18, 13, 11, 11],
-    "Liver Failure": [16, 21, 22, 23, 24, 25, 12, 14, 26, 27, 28, 29],
-    "Diabetes": [16, 40, 35, 31, 30, 38, 39, 33, 32, 37, 34, 36],
-    "Cervical Cancer": [48, 50, 47, 43, 44, 49, 46, 41, 45, 42, 11, 11],
-    "HIV": [8, 7, 10, 5, 2, 6, 4, 9, 3, 1, 11, 11],
-    "Prostate Cancer": [60, 59, 57, 55, 52, 53, 37, 54, 51, 61, 56, 58],
-}
-
 # Navigation
 pages = ["Cover Page", "Prediction", "Disclaimer"]
 selected_page = st.sidebar.radio("Navigate to", pages)
@@ -98,15 +89,27 @@ if selected_page == "Cover Page":
 elif selected_page == "Prediction":
     st.title("Disease Prediction System")
 
-    # Display all symptoms in a straight line
-    st.write("### Symptoms and Their Corresponding Numbers")
-    symptom_lines = [f"{number}: {symptom}" for symptom, number in symptom_mapping.items()]
-    st.write(", ".join(symptom_lines))  # Display symptoms in a single line
+    # Create a table with six columns
+    st.write("### Symptom Numbers and Their Descriptions")
+    symptom_list = list(symptom_mapping.items())  # Convert the mapping to a list of tuples
+    num_columns = 6  # Number of columns for the table
+    rows = len(symptom_list) // num_columns + (1 if len(symptom_list) % num_columns != 0 else 0)
 
-    # Display diseases and their associated symptom codes
-    st.write("### Diseases and Associated Symptoms")
-    for disease, symptoms in disease_symptoms.items():
-        st.write(f"**{disease}**: {', '.join(map(str, symptoms))}")  # Display only numbers
+    # Prepare table data for six columns
+    table_data = [
+        [(symptom_list[i + rows * j][1], symptom_list[i + rows * j][0]) if i + rows * j < len(symptom_list) else ("", "") for j in range(num_columns)]
+        for i in range(rows)
+    ]
+
+    # Format the data into "Number: Symptom" and handle empty cells
+    formatted_data = [
+        ["{}: {}".format(number, symptom) if number else "" for number, symptom in row]
+        for row in table_data
+    ]
+
+    # Convert the formatted data into a DataFrame for display
+    col_df = pd.DataFrame(formatted_data, columns=[f"Column {i+1}" for i in range(num_columns)])
+    st.table(col_df)
 
     # Dropdown menus for selecting symptoms
     st.write("### Select Symptoms by Number")
