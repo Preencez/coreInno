@@ -3,8 +3,8 @@ import numpy as np
 import joblib
 import pandas as pd
 
-# Load the trained Gaussian Naive Bayes model
-gaussian_nb_model = joblib.load("gaussian_nb_model.pkl")
+# Load the trained Random Forest model
+random_forest_model = joblib.load("Random Forest_best_model.pkl")
 
 # Symptom-to-number mapping
 symptom_mapping = {
@@ -129,8 +129,10 @@ elif selected_page == "Prediction":
 
     # Prediction function
     def manual_prediction(symptom_values):
+        # Pad the input symptoms to match the required number of inputs
+        symptom_values = symptom_values[:12] + [0] * (12 - len(symptom_values))
         input_array = np.array(symptom_values).reshape(1, -1)
-        return gaussian_nb_model.predict(input_array)[0]
+        return random_forest_model.predict(input_array)[0]
 
     # Predict Button
     if st.button("Make Prediction"):
@@ -142,7 +144,7 @@ elif selected_page == "Prediction":
         st.warning("For the most accurate prediction, please input all associated symptoms.")
 
     # Disclaimer under Prediction Page
-    st.markdown("""
+    st.markdown(""" 
     ---
     **Disclaimer:** This system provides predictions based on selected symptoms but is not a substitute for professional medical advice. Please consult a licensed physician for further evaluation.
     """)
